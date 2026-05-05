@@ -1,0 +1,60 @@
+services:
+  taskflow.api:
+    container_name: taskflow-api
+    build:
+      context: .
+      dockerfile: src/TaskFlow.Api/Dockerfile
+    ports:
+      - "5000:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: Server=taskflow.mysql;Port=3306;Database=${MYSQL_DATABASE};User=${MYSQL_USER};Password=${MYSQL_PASSWORD};
+      Jwt__Issuer: ${JWT_ISSUER}
+      Jwt__Audience: ${JWT_AUDIENCE}
+      Jwt__Secret: ${JWT_SECRET}
+      Redis__ConnectionString: ${REDIS_CONNECTION_STRING}
+    depends_on:
+      taskflow.mysql:
+        condition: service_healthy
+      taskflow.redis:
+        condition: service_started
+    networks:
+      - taskflow-network
+
+  taskflow.mysql:
+    container_name: taskflow-mysql
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - taskflow-mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - taskflow-network
+
+  taskflow.redis:
+    container_name: taskflow-redis
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - taskflow-network
+
+volumes:
+  taskflow-mysql-data:
+
+networks:
+  taskflow-network:
+    driver: bridge
