@@ -5,7 +5,7 @@ services:
       context: .
       dockerfile: src/TaskFlow.Api/Dockerfile
     ports:
-      - "5000:8080"
+      - "${ASPNETCORE_PORT}:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
@@ -32,7 +32,7 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     ports:
-      - "3306:3306"
+      - "${MYSQL_PORT}:3306"
     volumes:
       - taskflow-mysql-data:/var/lib/mysql
     healthcheck:
@@ -48,7 +48,7 @@ services:
     image: redis:7-alpine
     restart: unless-stopped
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT}:6379"
     networks:
       - taskflow-network
 
