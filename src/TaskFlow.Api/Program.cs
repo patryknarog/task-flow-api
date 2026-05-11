@@ -10,6 +10,8 @@ builder.Host.UseSerilog((context, configuration) =>
 });
 
 builder.Services.AddControllers();
+builder.Services.AddInfrastructure(builder.Configuration);
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
